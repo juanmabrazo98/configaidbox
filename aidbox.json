@@ -1,0 +1,62 @@
+{
+  "type": "config",
+  "modules": [
+    "cdc",
+    "subscription"
+  ],
+  "zen": {
+    "pub-sub-topic": {
+      "import": ["fhir.topic-based-subscription"],
+      "observation-topic": {
+        "zen/tags": ["fhir.topic-based-subscription/topic-definition"],
+        "url": "http://aidbox.app/SubscriptionTopic/observations",
+        "resourceTrigger": [
+          {
+            "resource": "Observation",
+            "fhirPathCriteria": "%current.value.ofType(Quantity).value > 10"
+          }
+        ],
+        "canFilterBy": [
+          {
+            "resource": "Observation",
+            "filterParameter": "value",
+            "_fhirPath": "%current.value.ofType(Quantity).value",
+            "modifier": ["eq", "gt", "lt", "ge", "le"]
+          },
+          {
+            "resource": "Observation",
+            "filterParameter": "value-increase",
+            "_fhirPath": "%current.value.ofType(Quantity).value > %previous.value.ofType(Quantity).value",
+            "modifier": ["eq"]
+          }
+        ]
+      },
+      "gcp-pubsub-observation-topic-storage": {
+        "zen/tags": ["fhir.topic-based-subscription/topic-storage"],
+        "storage-type": "fhir.topic-based-subscription/gcp-pubsub",
+        "status-interval": 10,
+        "heartbeat-rate": 120,
+        "maxContent": "full-resource",
+        "project-name": "aidbox-cloud-demo",
+        "topic-name": "aidbox-tbs-test",
+        "timeout": 1,
+        "maxCount": 100,
+        "bytes-threshold": 10000,
+        "enable-message-ordering": false
+      },
+      "observation-topic-srv": {
+        "zen/tags": ["aidbox/service"],
+        "engine": "fhir.topic-based-subscription/change-data-capture-service-engine",
+        "topic-definition": "observation-topic",
+        "topic-storage": "gcp-pubsub-observation-topic-storage"
+      }
+    },
+    "box": {
+      "zen/tags": ["aidbox/system"],
+      "zen/desc": "box for topic test",
+      "services": {
+        "observation-topic-srv": "observation-topic-srv"
+      }
+    }
+  }
+}
