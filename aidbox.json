@@ -1,9 +1,11 @@
 {
   "type": "config",
-  "modules": [
-    "cdc",
-    "subscription"
-  ],
+  "app": {
+    "modules": [
+      "cdc",
+      "subscription"
+    ]
+  },
   "zen": {
     "pub-sub-topic": {
       "import": ["fhir.topic-based-subscription"],
@@ -60,3 +62,4 @@
     }
   }
 }
+
